@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Voix — Bespoke Voice Keyboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Cinzel:wght@400;500&family=EB+Garamond:ital,wght@0,400;1,400&display=swap" rel="stylesheet" />
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --blue-deep: #2a5f9e;
+  --blue-mid: #5b8fc7;
+  --blue-light: #a8c8e8;
+  --blue-pale: #d8eaf5;
+  --white: #ffffff;
+  --gold: #b8956a;
+  --text-dark: #1a3050;
+  --text-mid: #4a6a8a;
+  --text-light: #8aaac8;
+}
+
+html, body { height: 100%; }
+
+body {
+  background: linear-gradient(180deg,
+    #ffffff 0%,
+    #f2f7fd 18%,
+    #daeaf8 42%,
+    #b4d0ee 68%,
+    #6a9fd4 85%,
+    #2a5f9e 100%
+  );
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  color: var(--text-dark);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 20px 70px;
+}
+
+/* ── HEADER ── */
+header {
+  text-align: center;
+  padding: 52px 0 30px;
+  z-index: 1;
+}
+
+.brand-line {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  margin-bottom: 12px;
+}
+
+.brand-orn {
+  width: 52px; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold));
+}
+.brand-orn.flip { transform: scaleX(-1); }
+
+.brand-name {
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.44em;
+  color: var(--gold);
+  text-transform: uppercase;
+}
+
+h1 {
+  font-size: clamp(44px, 6.5vw, 76px);
+  font-weight: 300;
+  line-height: 1;
+  color: var(--text-dark);
+  margin-bottom: 12px;
+  letter-spacing: -0.02em;
+}
+
+h1 em { font-style: italic; color: var(--blue-mid); }
+
+.subtitle {
+  font-family: 'EB Garamond', serif;
+  font-size: 15px;
+  font-style: italic;
+  color: var(--text-mid);
+  letter-spacing: 0.04em;
+}
+
+/* ── INSTRUCTION CARD ── */
+.instruction-card {
+  background: rgba(255,255,255,0.62);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(170,205,240,0.6);
+  border-radius: 3px;
+  padding: 16px 30px;
+  margin: 26px 0 36px;
+  max-width: 560px;
+  text-align: center;
+  box-shadow: 0 4px 24px rgba(40,80,140,0.09);
+}
+
+.instruction-card p {
+  font-size: 14.5px;
+  color: var(--text-mid);
+  line-height: 1.75;
+  font-style: italic;
+}
+
+.instruction-card p span {
+  color: var(--blue-deep);
+  font-style: normal;
+  font-weight: 600;
+}
+
+/* ── KEYBOARD SHELL ── */
+.keyboard-shell {
+  position: relative;
+  z-index: 1;
+  background: linear-gradient(170deg, #1c3a60 0%, #0e2040 55%, #162848 100%);
+  border-radius: 14px 14px 18px 18px;
+  padding: 26px 28px 32px;
+  box-shadow:
+    0 2px 0 rgba(255,255,255,0.07) inset,
+    0 -3px 0 rgba(0,0,0,0.38) inset,
+    0 40px 100px rgba(8,22,55,0.6),
+    0 14px 35px rgba(8,22,55,0.32),
+    0 4px 10px rgba(8,22,55,0.2);
+  width: fit-content;
+  max-width: 98vw;
+}
+
+.keyboard-shell::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 8px;
+  background: linear-gradient(90deg, #243a58, #344e78, #4468a0, #344e78, #243a58);
+  border-radius: 14px 14px 0 0;
+  box-shadow: 0 1px 0 rgba(255,255,255,0.08) inset;
+}
+
+.kb-label {
+  font-family: 'Cinzel', serif;
+  font-size: 9px;
+  letter-spacing: 0.45em;
+  color: rgba(110,160,218,0.32);
+  text-align: center;
+  margin-bottom: 18px;
+  margin-top: 2px;
+  text-transform: uppercase;
+}
+
+/* ── ROWS ── */
+.kb-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  align-items: flex-start;
+}
+
+.kb-row {
+  display: flex;
+  gap: 7px;
+}
+
+.kb-row:nth-child(2) { padding-left: 24px; }
+.kb-row:nth-child(3) { padding-left: 50px; }
+
+/* ── INDIVIDUAL KEY ── */
+.key {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  border-radius: 7px 7px 10px 10px;
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.07s ease, box-shadow 0.07s ease, background 0.1s ease;
+  transform-origin: top center;
+  flex-shrink: 0;
+
+  background: linear-gradient(180deg,
+    #ffffff 0%,
+    #f5f9fe 40%,
+    #e4eff8 100%
+  );
+  box-shadow:
+    0 1px 0 rgba(255,255,255,1) inset,
+    0 -1px 0 rgba(120,170,220,0.25) inset,
+    1px 0 0 rgba(255,255,255,0.6) inset,
+    0 6px 0 #94bcdc,
+    0 8px 0 #7aacce,
+    0 11px 18px rgba(14,40,90,0.45),
+    0 3px 5px rgba(14,40,90,0.2);
+  border: 1px solid rgba(150,195,235,0.45);
+  border-bottom: none;
+}
+
+.key:hover {
+  background: linear-gradient(180deg,
+    #ffffff 0%,
+    #eaf4fd 40%,
+    #d4eaf8 100%
+  );
+}
+
+.key.pressed {
+  transform: rotateX(5deg) translateY(3px);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.75) inset,
+    0 3px 0 #94bcdc,
+    0 5px 0 #7aacce,
+    0 7px 10px rgba(14,40,90,0.38);
+  background: linear-gradient(180deg,
+    #dcedf8 0%,
+    #cce3f5 40%,
+    #b8d6f0 100%
+  );
+}
+
+.key.has-recording {
+  background: linear-gradient(180deg,
+    #e4f0fb 0%,
+    #cce2f8 40%,
+    #b0d2f4 100%
+  );
+  border-color: rgba(80,150,225,0.5);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.85) inset,
+    0 6px 0 #78aad4,
+    0 8px 0 #5a90c0,
+    0 11px 18px rgba(14,40,100,0.5),
+    0 0 0 1px rgba(80,150,225,0.18);
+}
+
+.key.has-recording:hover {
+  background: linear-gradient(180deg,
+    #d8e8f8 0%,
+    #bcd8f4 40%,
+    #a0c8ee 100%
+  );
+}
+
+.key.recording-active {
+  background: linear-gradient(180deg,
+    #fff2f2 0%,
+    #fde2e2 40%,
+    #f8c8c8 100%
+  ) !important;
+  border-color: rgba(210,90,90,0.4) !important;
+  animation: recPulse 0.75s ease-in-out infinite;
+}
+
+@keyframes recPulse {
+  0%,100% { box-shadow: 0 6px 0 #d4a8a8, 0 9px 16px rgba(170,40,40,0.3), 0 0 0 0 rgba(200,60,60,0); }
+  50%     { box-shadow: 0 6px 0 #d4a8a8, 0 9px 16px rgba(170,40,40,0.3), 0 0 20px 7px rgba(200,60,60,0.16); }
+}
+
+/* Letter label */
+.key-letter {
+  position: absolute;
+  top: 8px;
+  left: 10px;
+  font-family: 'Cinzel', serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-mid);
+  letter-spacing: 0.04em;
+  pointer-events: none;
+  transition: color 0.2s;
+}
+
+.key.has-recording   .key-letter { color: var(--blue-deep); }
+.key.recording-active .key-letter { color: #a83030; }
+
+/* Blue dot = has recording */
+.key-dot {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--blue-mid);
+  box-shadow: 0 0 7px rgba(91,143,199,0.75);
+  opacity: 0;
+  transition: opacity 0.28s;
+  pointer-events: none;
+}
+.key.has-recording .key-dot { opacity: 1; }
+
+/* Click ripple */
+.key-ripple {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: rgba(91,143,199,0.3);
+  transform: translate(-50%,-50%) scale(0);
+  pointer-events: none;
+  animation: ripple 0.45s ease-out forwards;
+}
+@keyframes ripple { to { transform: translate(-50%,-50%) scale(3.8); opacity: 0; } }
+
+/* ── CONTROLS ── */
+.controls {
+  margin-top: 38px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  z-index: 1;
+}
+
+.mode-toggle {
+  display: flex;
+  background: rgba(255,255,255,0.52);
+  border: 1px solid rgba(155,200,240,0.55);
+  border-radius: 2px;
+  overflow: hidden;
+  box-shadow: 0 2px 14px rgba(30,70,140,0.1);
+  backdrop-filter: blur(10px);
+}
+
+.mode-btn {
+  padding: 12px 36px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-family: 'Cinzel', serif;
+  font-size: 10.5px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--text-light);
+  transition: all 0.22s ease;
+  position: relative;
+}
+
+.mode-btn + .mode-btn::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 22%; bottom: 22%;
+  width: 1px;
+  background: rgba(155,200,240,0.4);
+}
+
+.mode-btn.active     { background: rgba(42,95,158,0.1); color: var(--blue-deep); }
+.mode-btn.active.rec { background: rgba(175,55,55,0.07); color: #a03030; }
+
+.status-display {
+  min-height: 22px;
+  font-family: 'EB Garamond', serif;
+  font-style: italic;
+  font-size: 15px;
+  color: var(--text-light);
+  text-align: center;
+  letter-spacing: 0.04em;
+  transition: color 0.25s;
+}
+.status-display.recording { color: #a03030; }
+.status-display.playing   { color: var(--blue-deep); }
+.status-display.success   { color: #357055; }
+
+.rec-indicator { display: inline-flex; align-items: center; gap: 9px; }
+
+.rec-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: #c03030;
+  display: none;
+  animation: blink 0.9s ease-in-out infinite;
+}
+.rec-dot.on { display: inline-block; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.12} }
+
+.clear-btn {
+  background: transparent;
+  border: 1px solid rgba(155,200,240,0.38);
+  border-radius: 2px;
+  padding: 9px 22px;
+  cursor: pointer;
+  font-family: 'Cinzel', serif;
+  font-size: 9px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--text-light);
+  transition: all 0.22s;
+}
+.clear-btn:hover {
+  border-color: rgba(175,55,55,0.45);
+  color: #a03030;
+  background: rgba(175,55,55,0.04);
+}
+
+/* ── FOOTER ── */
+footer {
+  margin-top: 52px;
+  text-align: center;
+  z-index: 1;
+}
+
+.foot-orn {
+  display: flex; align-items: center; justify-content: center;
+  gap: 14px; margin-bottom: 11px;
+}
+.foot-orn::before, .foot-orn::after {
+  content: '';
+  display: block;
+  width: 36px; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(184,149,106,0.35));
+}
+.foot-orn::after { transform: scaleX(-1); }
+.foot-diamond { width: 5px; height: 5px; background: rgba(184,149,106,0.38); transform: rotate(45deg); }
+
+footer p {
+  font-size: 13px;
+  color: rgba(255,255,255,0.55);
+  font-style: italic;
+  font-family: 'EB Garamond', serif;
+  letter-spacing: 0.06em;
+}
+
+/* ── TOOLTIP ── */
+.tooltip {
+  position: fixed;
+  background: rgba(10,26,58,0.93);
+  color: rgba(215,232,250,0.92);
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 13px;
+  padding: 6px 13px;
+  border-radius: 2px;
+  pointer-events: none;
+  z-index: 100;
+  opacity: 0;
+  transition: opacity 0.17s;
+  white-space: nowrap;
+  border: 1px solid rgba(110,165,220,0.22);
+  letter-spacing: 0.03em;
+}
+.tooltip.on { opacity: 1; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand-line">
+    <div class="brand-orn"></div>
+    <span class="brand-name">Voix</span>
+    <div class="brand-orn flip"></div>
+  </div>
+  <h1>The <em>Voice</em> Keyboard</h1>
+  <p class="subtitle">Every key holds a voice. Every voice becomes music.</p>
+</header>
+
+<div class="instruction-card">
+  <p>
+    Switch to <span>Record</span>, press any key, and hum your tone into the mic.
+    Switch to <span>Play</span> and press the same key to hear your voice.
+    Use your physical keyboard or click on screen.
+  </p>
+</div>
+
+<div class="keyboard-shell">
+  <div class="kb-label">Voix · Bespoke Voice Keyboard</div>
+  <div class="kb-rows" id="kb-rows"></div>
+</div>
+
+<div class="controls">
+  <div class="mode-toggle">
+    <button class="mode-btn active" id="btnPlay" onclick="setMode('play')">Play</button>
+    <button class="mode-btn rec"    id="btnRec"  onclick="setMode('record')">Record</button>
+  </div>
+  <div class="status-display" id="statusWrap">
+    <span class="rec-indicator">
+      <span class="rec-dot" id="recDot"></span>
+      <span id="statusTxt">Select a mode, then press a key.</span>
+    </span>
+  </div>
+  <button class="clear-btn" onclick="clearAll()">Clear All Recordings</button>
+</div>
+
+<footer>
+  <div class="foot-orn"><div class="foot-diamond"></div></div>
+  <p>Each key holds a voice. Each voice holds a note.</p>
+</footer>
+
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+const ROWS = [
+  ['q','w','e','r','t','y','u','i','o','p'],
+  ['a','s','d','f','g','h','j','k','l'],
+  ['z','x','c','v','b','n','m']
+];
+const ALL_KEYS = new Set(ROWS.flat());
+
+let mode = 'play';
+let recordings = {};
+let activeRecorder = null;
+let activeKey = null;
+let mediaStream = null;
+
+// ── BUILD ──
+const kbRows = document.getElementById('kb-rows');
+ROWS.forEach(row => {
+  const rowEl = document.createElement('div');
+  rowEl.className = 'kb-row';
+  row.forEach(letter => {
+    const key = document.createElement('div');
+    key.className = 'key';
+    key.id = 'key-' + letter;
+    key.dataset.key = letter;
+
+    const lbl = document.createElement('div');
+    lbl.className = 'key-letter';
+    lbl.textContent = letter.toUpperCase();
+    key.appendChild(lbl);
+
+    const dot = document.createElement('div');
+    dot.className = 'key-dot';
+    key.appendChild(dot);
+
+    key.addEventListener('mousedown', e => { e.preventDefault(); triggerKey(letter); });
+    key.addEventListener('mouseup',    () => stopIfActive(letter));
+    key.addEventListener('mouseleave', () => stopIfActive(letter));
+    rowEl.appendChild(key);
+  });
+  kbRows.appendChild(rowEl);
+});
+
+// ── TOOLTIP ──
+const tooltip = document.getElementById('tooltip');
+document.querySelectorAll('.key').forEach(k => {
+  k.addEventListener('mousemove', e => {
+    const l = k.dataset.key;
+    tooltip.textContent = l.toUpperCase() + (recordings[l] ? '  ·  recorded' : '  ·  no recording');
+    tooltip.style.left = (e.clientX + 14) + 'px';
+    tooltip.style.top  = (e.clientY - 30) + 'px';
+    tooltip.classList.add('on');
+  });
+  k.addEventListener('mouseleave', () => tooltip.classList.remove('on'));
+});
+
+// ── MODE ──
+function setMode(m) {
+  mode = m;
+  document.getElementById('btnPlay').classList.toggle('active', m === 'play');
+  document.getElementById('btnRec').classList.toggle('active',  m === 'record');
+  setStatus(m === 'play'
+    ? 'Play mode — press any key to hear your voice.'
+    : 'Record mode — hold a key and sing your note.', '');
+}
+
+// ── TRIGGER ──
+async function triggerKey(letter) {
+  const el = document.getElementById('key-' + letter);
+  if (!el) return;
+
+  el.classList.add('pressed');
+  setTimeout(() => el.classList.remove('pressed'), 120);
+
+  const r = document.createElement('div');
+  r.className = 'key-ripple';
+  el.appendChild(r);
+  setTimeout(() => r.remove(), 450);
+
+  if (mode === 'record') await startRecording(letter);
+  else playRecording(letter);
+}
+
+function stopIfActive(letter) {
+  if (mode === 'record' && activeKey === letter) stopRecording();
+}
+
+// ── RECORD ──
+async function startRecording(letter) {
+  if (activeRecorder) return;
+  try {
+    if (!mediaStream) mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+    const recorder = new MediaRecorder(mediaStream);
+    const chunks = [];
+    activeRecorder = recorder;
+    activeKey = letter;
+
+    const el = document.getElementById('key-' + letter);
+    el.classList.add('recording-active');
+    document.getElementById('recDot').classList.add('on');
+    setStatus('Recording "' + letter.toUpperCase() + '" — release to finish…', 'recording');
+
+    recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+    recorder.onstop = () => {
+      recordings[letter] = URL.createObjectURL(new Blob(chunks, { type: 'audio/webm' }));
+      el.classList.remove('recording-active');
+      el.classList.add('has-recording');
+      document.getElementById('recDot').classList.remove('on');
+      setStatus('"' + letter.toUpperCase() + '" recorded — press again to re-record.', 'success');
+      activeRecorder = null;
+      activeKey = null;
+    };
+
+    recorder.start();
+    setTimeout(() => { if (recorder.state === 'recording') recorder.stop(); }, 4000);
+
+  } catch(err) {
+    setStatus('Microphone access denied — please allow mic in your browser.', '');
+    activeRecorder = null;
+    activeKey = null;
+  }
+}
+
+function stopRecording() {
+  if (activeRecorder && activeRecorder.state === 'recording') activeRecorder.stop();
+}
+
+// ── PLAY ──
+function playRecording(letter) {
+  const url = recordings[letter];
+  if (!url) { setStatus('"' + letter.toUpperCase() + '" has no recording yet.', ''); return; }
+  const audio = new Audio(url);
+  audio.play();
+  setStatus('Playing "' + letter.toUpperCase() + '"…', 'playing');
+  audio.onended = () => setStatus('', '');
+}
+
+// ── STATUS ──
+function setStatus(msg, type) {
+  document.getElementById('statusTxt').textContent = msg;
+  document.getElementById('statusWrap').className = 'status-display ' + (type || '');
+}
+
+// ── CLEAR ──
+function clearAll() {
+  if (!confirm('Clear all voice recordings?')) return;
+  recordings = {};
+  document.querySelectorAll('.key').forEach(k => k.classList.remove('has-recording','recording-active'));
+  setStatus('All recordings cleared.', '');
+}
+
+// ── KEYBOARD ──
+document.addEventListener('keydown', e => {
+  if (e.repeat) return;
+  const l = e.key.toLowerCase();
+  if (!ALL_KEYS.has(l)) return;
+  triggerKey(l);
+});
+document.addEventListener('keyup', e => {
+  const l = e.key.toLowerCase();
+  if (ALL_KEYS.has(l)) stopIfActive(l);
+});
+
+setStatus('Select a mode above, then press any key.', '');
+</script>
+</body>
+</html>
